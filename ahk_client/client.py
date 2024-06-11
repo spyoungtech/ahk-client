@@ -1,14 +1,27 @@
 import threading
-from typing import Optional, List, Any, Tuple
+from typing import Any
+from typing import List
+from typing import Literal
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import Union
 
-from ahk import AHK, Control, Window, FutureResult
+import requests
+from ahk import AHK
+from ahk import Control
+from ahk import FutureResult
+from ahk import Window
 from ahk._sync.transport import Transport
 from ahk._types import FunctionName
-from ahk.message import RequestMessage, ResponseMessage
 from ahk.directives import Directive
-from typing import Literal, Union, Type
-from ahk.extensions import _extension_registry, _resolve_extensions, _ExtensionMethodRegistry, Extension
-import requests
+from ahk.extensions import _extension_registry
+from ahk.extensions import _ExtensionMethodRegistry
+from ahk.extensions import _resolve_extensions
+from ahk.extensions import Extension
+from ahk.message import RequestMessage
+from ahk.message import ResponseMessage
+
 
 class AHKClient(AHK):
     def __init__(self, host: str):
@@ -32,6 +45,7 @@ class AHKClient(AHK):
         self._method_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
         for ext in self._extensions:
             self._method_registry.merge(ext._extension_method_registry)
+
 
 class HTTPTransport(Transport):
     def __init__(
@@ -74,7 +88,10 @@ class HTTPTransport(Transport):
         self, request: RequestMessage, engine: Optional[AHK[Any]] = None
     ) -> FutureResult[Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]]:
         raise NotImplementedError()
-    def send(self, request: RequestMessage, engine: Optional[AHK[Any]] = None) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
+
+    def send(
+        self, request: RequestMessage, engine: Optional[AHK[Any]] = None
+    ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
         with self.lock:
             response = requests.post(f'{self._host}/{request.function_name}', json=request.args)
         response.raise_for_status()
